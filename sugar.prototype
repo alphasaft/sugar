@@ -1,0 +1,55 @@
+# --- typescript.cane ---
+
+__root__ :: ...
+
+
+# --- stdlib.cane ---
+
+seed keywords
+seed root
+seed ws :: %"\s+"
+
+@optional optWs :: <ws>
+
+decorator optional :: [ <it> ]
+decorator identifier :: !<keywords> <it>
+annotation nomemo
+
+
+# --- nts.sugar ---
+
+import stdlib
+import typescript.__root__
+import typescript.type
+
+$name = "typescript??"
+$extension = ".nts"
+$executeWith = "ts {}"
+$bind = "pycore.py"
+$compileNamespace = "pycore.Compiler"
+$compileStrategy = "none" | "search"
+$target = "python"
+$nodependencies
+
+plant global stlib.keywords :: (static | dynamic | let | var | val)
+plant global stdlib.root :: <root>
+
+@nomemo {
+	root :: <typescript.__root__ where <typescript.type> is <nullableType>>
+	nullableType :: <typescript.type>:base ["??"]:nullable?
+}
+
+@nomemo @identifier classIdentifier :: %"[A-Z][a-zA-Z]*"
+
+
+// I know it's transpile but don't care
+compile root as __root__
+
+
+
+// --- pycore.py ---
+
+class Compiler:
+	@compiler
+	def nullableType(self, ast):
+		return self.compile(ast.standard) + (" | null" if ast.nullable else "")
